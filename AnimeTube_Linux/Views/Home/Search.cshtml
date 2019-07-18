@@ -59,12 +59,16 @@
                     let channel = response.channels[channelIterator];
                     let html = '\
 <div class="container anime-result-element"> \
-  <a href="' + channel.playlist_url + '"> \
-    <figure class="figure"> \
-      <img src="' + channel.logo_30x30 + '" class="figure-img img-thumbnail rounded" alt="' + channel.title + '"> \
-      <figcaption class="figure-caption font-weight-bold">' + channel.title + '</figcaption> \
-    </figure> \
-  </a> \
+  <div class="row"> \
+    <div class="col-12"> \
+      <img src="' + channel.logo_30x30 + '" class="rounded center poster" alt="' + channel.title + '"> \
+    </div> \
+  </div> \
+  <div class="row"> \
+    <div class="col-12"> \
+      <label class="poster-label">' + channel.title + '</label> \
+    </div> \
+  </div> \
 </div>';
                     $('.anime-result').append(html);
                 }
@@ -75,6 +79,11 @@
     $(function () {
         GetProviders();
         $('.search').click(function () { SearchAnime(); });
+        $('#search-query').keyup(function (event) {
+            if (event.keyCode === 13) {
+                $('.search').click();
+            }
+        });
     });
 </script>
 
@@ -82,7 +91,28 @@
     .provider-checkbox {
         padding: 9px 10px;
     }
+    .anime-result {
+        display: grid;
+        grid-template-columns: 33% 33% 33%;
+        grid-gap: 10px;
+    }
     .anime-result-element {
-        max-height: 200px;
+        padding: 20px;
+    }
+    .poster {
+        height: 400px;
+        width: auto;
+        margin: 0 auto;
+        display: block;
+    }
+    .poster-label {
+        font-size: 15px;
+        color: black;
+        text-align: center;
+        width: 80%;
+        margin-left: 10%;
+        font-weight: 700;
+        margin-top: -50px;
+        background-color: rgb(255, 255, 255, 0.7);
     }
 </style>
