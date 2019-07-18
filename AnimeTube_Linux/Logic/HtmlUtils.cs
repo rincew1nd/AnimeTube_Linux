@@ -29,6 +29,7 @@ namespace AnimeTube_Linux.Logic
                 }
                 else
                 {
+                    Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
                     readStream = new StreamReader(receiveStream, Encoding.GetEncoding(response.CharacterSet));
                 }
 

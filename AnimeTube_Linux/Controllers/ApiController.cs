@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
+using AnimeTube_Linux.Logic;
 using AnimeTube_Linux.Logic.Providers;
+using AnimeTube_Linux.Models.Frontend;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -24,41 +25,68 @@ namespace AnimeTube_Linux.Controllers
             return (IProvider)type.GetMethod("GetInstance").Invoke(null, null);
         }
 
-        [HttpGet]
-        public List<(int, string)> GetProviders()
+        [HttpGet, Route("providers")]
+        public List<Provider> GetProviders()
         {
-            var result = new List<(int, string)>();
-            var providers = GetProvidersType;
-            for(var i = 0; i < providers.Length; i++)
+            var result = new List<Provider>();
+            foreach(var provider in GetProvidersType)
             {
-                result.Add((i, providers[i].Name));
+                var providerObj = GetProviderType(provider.Name);
+                result.Add(new Provider()
+                {
+                    TechnicalName = provider.Name,
+                    Name = providerObj.Info().Name,
+                    URL = providerObj.Info().SiteUrl,
+                    Favicon = providerObj.Info().FaviconUrl
+                });
             }
             return result;
         }
-
-        // GET api/<controller>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        
+        [HttpGet, Route("search")]
+        public List<Series> SearchSeries(string providerName, string query)
         {
-            return "value";
+            var result = new List<Series>();
+
+            var provider = GetProviderType(providerName);
+
+            foreach(var series in provider.SearchForSeries(query))
+            {
+                result.Add(new Series()
+                {
+                    Title = series.Name,
+                    Poster = series.ImageUrl,
+                    Url = Url.Action("Watch", "Home", new { providerName, url = series.SeriesUrl, series = series.Name })
+                });
+            }
+
+            return result;
         }
 
-        // POST api/<controller>
-        [HttpPost]
-        public void Post([FromBody]string value)
+        [HttpGet, Route("episodes")]
+        public List<Episode> SearchEpisodes(string providerName, string url)
         {
+            var result = new List<Episode>();
+
+            var provider = GetProviderType(providerName);
+
+            foreach (var episode in provider.SearchForEpisode(url))
+            {
+                result.Add(new Episode()
+                {
+                    Name = episode.Name,
+                    Link = episode.MovieUrl,
+                    IsDirect = episode.IsDirectLink
+                });
+            }
+
+            return result;
         }
 
-        // PUT api/<controller>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
+        [HttpGet, Route("directlink")]
+        public (string, string)[] GetDirectLink(string url)
         {
-        }
-
-        // DELETE api/<controller>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
+            return DirectLinkFinder.Find(url);
         }
     }
 }

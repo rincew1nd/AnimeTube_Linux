@@ -1,0 +1,81 @@
+﻿@{
+    ViewData["Title"] = "Выбор серии аниме ";
+}
+
+<h1>@ViewData["Title"] @ViewData["Anime"]</h1>
+<br/>
+<div class="container">
+    <div class="row">
+        <div class="col-2">
+            <label class="col-form-label">Выберите серию</label>
+        </div>
+        <div class="col-4">
+            <select class="selectpicker episode-selector" data-width="100%"></select>
+        </div>
+        <div class="col-2">
+            <label class="col-form-label">Качество</label>
+        </div>
+        <div class="col-4">
+            <select class="selectpicker quality-selector" data-width="100%"></select>
+        </div>
+    </div>
+</div>
+
+<div class="container player">
+</div>
+
+<script>
+    var episodes = [];
+    var qualities = [];
+    var EpisodeSelector = null;
+    var QualitySelector = null;
+
+    function GetEpisodes() {
+        //Get parameters from URL
+        var url = new URL(window.location.href);
+        var providerName = url.searchParams.get("providerName");
+        var url = url.searchParams.get("url");
+
+        $.get('/api/episodes', { providerName, url }, function (response, status) {
+            episodes = response;
+
+            EpisodeSelector = $('select.episode-selector');
+
+            for (var episodeIteratior in response) {
+                var episode = response[episodeIteratior];
+                EpisodeSelector.append('<option value="' + episodeIteratior + '">' + episode.name + '</option>');
+            }
+
+            EpisodeSelector.selectpicker('refresh');
+            EpisodeSelector.on("changed.bs.select", function (e, clickedIndex, newValue, oldValue) {
+                if (typeof this.value != "undefined") {
+                    GetVideoLinks();
+                }
+            });
+            GetVideoLinks();
+        });
+    }
+
+    function GetVideoLinks() {
+        QualitySelector = $('select.quality-selector');
+
+        var episode = episodes[EpisodeSelector.val()];
+        if (episode.isDirect) {
+            QualitySelector.append('<option value="' + episode.link + '">Прямая ссылка на видеофайл</option>');
+            QualitySelector.selectpicker('refresh');
+        } else {
+            $.get('/api/directlink', { url: episode.link }, function (response, status) {
+                qualities = response;
+                for (var qualityIterator in qualities) {
+                    var quality = qualities[qualityIterator];
+                    QualitySelector.append('<option value="' + quality.item2 + '">' + quality.item1 + '</option>');
+                }
+                QualitySelector.selectpicker('refresh');
+            });
+        }
+    }
+
+    $(function () {
+        GetEpisodes();
+    });
+</script>

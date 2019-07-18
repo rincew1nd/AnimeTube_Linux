@@ -25,6 +25,12 @@ namespace AnimeTube_Linux.Controllers
             return View();
         }
 
+        public IActionResult Watch(string providerName, string series, string url)
+        {
+            ViewData["Anime"] = series;
+            return View();
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

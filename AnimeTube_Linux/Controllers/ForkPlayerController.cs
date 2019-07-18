@@ -10,8 +10,8 @@ using System.Reflection;
 
 namespace AnimeTube_Linux.Controllers
 {
-    [Route("api2")]
-    public class DefaultController : ControllerBase
+    [Route("fork")]
+    public class ForkplayerController : ControllerBase
     {
         public Type[] GetProvidersType =>
             Assembly.GetExecutingAssembly().GetTypes()

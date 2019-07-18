@@ -33,40 +33,40 @@
     var response_test = [];
 
     function GetProviders() {
-        $.get('/api2', null, function (response, code) {
-            providers = response.channels;
-            FillSearchPage();
-        });
-    }
+        $.get('/api/providers', null, function (response, code) {
+            providers = response;
 
-    function FillSearchPage() {
-        var providersDiv = $('.providers');
-        
-        for (var providerIterator in providers) {
-            var provider = providers[providerIterator];
-            let html = '<label class="checkbox provider-checkbox"><input type="checkbox" value="' + providerIterator + '">' + provider.title + '</label>';
-            providersDiv.append(html);
-        }
+            var providersDiv = $('.providers');
+            for (var providerIterator in providers) {
+                var provider = providers[providerIterator];
+                let html = ' \
+<label class="checkbox provider-checkbox"> \
+  <input type="checkbox" value="' + providerIterator + '"> \
+  ' + provider.name + ' \
+  <img src="' + provider.favicon + '" id="provider-favicon"> \
+</label>';
+                providersDiv.append(html);
+            }
+        });
     }
 
     function SearchAnime() {
         $('.provider-checkbox > input:checked').each(function (element) {
             $('.anime-result').html('');
             var provider = providers[$(this).val()];
-            $.get(provider.playlist_url, { search : $('#search-query').val() }, function (response, status) {
-                response_test.push(response);
-                for (var channelIterator in response.channels) {
-                    let channel = response.channels[channelIterator];
+            $.get("/api/search", { providerName: provider.technicalName, query: $('#search-query').val() }, function (response, status) {
+                for (var seriesIterator in response) {
+                    let series = response[seriesIterator];
                     let html = '\
-<div class="container anime-result-element"> \
+<div class="container anime-result-element" onclick="location.href=\'' + series.url + '\';"> \
   <div class="row"> \
     <div class="col-12"> \
-      <img src="' + channel.logo_30x30 + '" class="rounded center poster" alt="' + channel.title + '"> \
+      <img src="' + series.poster + '" class="rounded center poster" alt="' + series.title + '"> \
     </div> \
   </div> \
   <div class="row"> \
     <div class="col-12"> \
-      <label class="poster-label">' + channel.title + '</label> \
+      <label class="poster-label">' + series.title + '</label> \
     </div> \
   </div> \
 </div>';
@@ -86,33 +86,3 @@
         });
     });
 </script>
-
-<style>
-    .provider-checkbox {
-        padding: 9px 10px;
-    }
-    .anime-result {
-        display: grid;
-        grid-template-columns: 33% 33% 33%;
-        grid-gap: 10px;
-    }
-    .anime-result-element {
-        padding: 20px;
-    }
-    .poster {
-        height: 400px;
-        width: auto;
-        margin: 0 auto;
-        display: block;
-    }
-    .poster-label {
-        font-size: 15px;
-        color: black;
-        text-align: center;
-        width: 80%;
-        margin-left: 10%;
-        font-weight: 700;
-        margin-top: -50px;
-        background-color: rgb(255, 255, 255, 0.7);
-    }
-</style>
