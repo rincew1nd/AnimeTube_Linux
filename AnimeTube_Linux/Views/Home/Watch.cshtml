@@ -3,7 +3,7 @@
 }
 
 <h1>@ViewData["Title"] @ViewData["Anime"]</h1>
-<br/>
+<br />
 <div class="container">
     <div class="row">
         <div class="col-2">
@@ -22,6 +22,7 @@
 </div>
 
 <div class="container player">
+    <video preload="none" id="player" autoplay controls></video>
 </div>
 
 <script>
@@ -31,7 +32,6 @@
     var QualitySelector = null;
 
     function GetEpisodes() {
-        //Get parameters from URL
         var url = new URL(window.location.href);
         var providerName = url.searchParams.get("providerName");
         var url = url.searchParams.get("url");
@@ -58,11 +58,18 @@
 
     function GetVideoLinks() {
         QualitySelector = $('select.quality-selector');
+        QualitySelector.on("changed.bs.select", function (e, clickedIndex, newValue, oldValue) {
+            if (typeof this.value != "undefined") {
+                PlayVideo();
+            }
+        });
+        QualitySelector.html('');
 
         var episode = episodes[EpisodeSelector.val()];
         if (episode.isDirect) {
             QualitySelector.append('<option value="' + episode.link + '">Прямая ссылка на видеофайл</option>');
             QualitySelector.selectpicker('refresh');
+            PlayVideo();
         } else {
             $.get('/api/directlink', { url: episode.link }, function (response, status) {
                 qualities = response;
@@ -71,11 +78,38 @@
                     QualitySelector.append('<option value="' + quality.item2 + '">' + quality.item1 + '</option>');
                 }
                 QualitySelector.selectpicker('refresh');
+                PlayVideo();
             });
         }
+    }
+
+    function PlayVideo(url) {
+        $('.player').html('<video preload="none" id="player" autoplay controls></video>');
+        var video = document.querySelector('#player');
+        if (QualitySelector.val().includes('m3u')) {
+            if (Hls.isSupported()) {
+                var hls = new Hls();
+                hls.loadSource(QualitySelector.val());
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, function () {
+                    video.play();
+                });
+            }
+        } else {
+            $('#player').html('<source src="' + QualitySelector.val() + '" type="video/mp4">');
+        }
+        plyr.setup(video);
     }
 
     $(function () {
         GetEpisodes();
     });
 </script>
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.plyr.io/1.8.2/plyr.css">
+}
+@section Scripts {
+    <script src="https://cdn.plyr.io/1.8.2/plyr.js"></script>
+    <script src="https://cdn.jsdelivr.net/hls.js/latest/hls.js"></script>
+}

@@ -35,6 +35,7 @@ namespace AnimeTube_Linux
                 {
                     option.OutputFormatters.RemoveType<XmlDataContractSerializerOutputFormatter>();
                 })
+                .AddCors()
                 .AddMvc()
                 .AddJsonOptions(opt =>
                 {
@@ -75,6 +76,10 @@ namespace AnimeTube_Linux
                     template: "{controller}/{action = Index}/{id?}"
                 );
             });
+
+            app.UseCors(
+                options => options.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod()
+            );
         }
     }
 }
