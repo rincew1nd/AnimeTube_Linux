@@ -1,0 +1,88 @@
+﻿@{
+    ViewData["Title"] = "Поиск аниме";
+}
+
+<h1>@ViewData["Title"]</h1>
+<br/>
+<div class="container">
+    <div class="row">
+        <div class="col-2">
+            <label class="col-form-label">Название аниме</label>
+        </div>
+        <div class="col-8">
+            <input class="form-control" id="search-query" />
+        </div>
+        <div class="col-2">
+            <button class="btn btn-primary search">Поиск</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-2">
+            <label class="col-form-label">Провайдеры</label>
+        </div>
+        <div class="providers col-10">
+        </div>
+    </div>
+</div>
+
+<div class="container anime-result">
+</div>
+
+<script>
+    var providers = [];
+    var response_test = [];
+
+    function GetProviders() {
+        $.get('/api2', null, function (response, code) {
+            providers = response.channels;
+            FillSearchPage();
+        });
+    }
+
+    function FillSearchPage() {
+        var providersDiv = $('.providers');
+        
+        for (var providerIterator in providers) {
+            var provider = providers[providerIterator];
+            let html = '<label class="checkbox provider-checkbox"><input type="checkbox" value="' + providerIterator + '">' + provider.title + '</label>';
+            providersDiv.append(html);
+        }
+    }
+
+    function SearchAnime() {
+        $('.provider-checkbox > input:checked').each(function (element) {
+            $('.anime-result').html('');
+            var provider = providers[$(this).val()];
+            $.get(provider.playlist_url, { search : $('#search-query').val() }, function (response, status) {
+                response_test.push(response);
+                for (var channelIterator in response.channels) {
+                    let channel = response.channels[channelIterator];
+                    let html = '\
+<div class="container anime-result-element"> \
+  <a href="' + channel.playlist_url + '"> \
+    <figure class="figure"> \
+      <img src="' + channel.logo_30x30 + '" class="figure-img img-thumbnail rounded" alt="' + channel.title + '"> \
+      <figcaption class="figure-caption font-weight-bold">' + channel.title + '</figcaption> \
+    </figure> \
+  </a> \
+</div>';
+                    $('.anime-result').append(html);
+                }
+            });
+        });
+    }
+    
+    $(function () {
+        GetProviders();
+        $('.search').click(function () { SearchAnime(); });
+    });
+</script>
+
+<style>
+    .provider-checkbox {
+        padding: 9px 10px;
+    }
+    .anime-result-element {
+        max-height: 200px;
+    }
+</style>

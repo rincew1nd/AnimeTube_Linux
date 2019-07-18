@@ -10,7 +10,7 @@ using System.Reflection;
 
 namespace AnimeTube_Linux.Controllers
 {
-    [Route("api")]
+    [Route("api2")]
     public class DefaultController : ControllerBase
     {
         public Type[] GetProvidersType =>
@@ -56,7 +56,7 @@ namespace AnimeTube_Linux.Controllers
             try
             {
                 var provider = GetProviderType(providerName);
-                var seriesFound = new List<Series>();// provider.SearchForSeries(search);
+                var seriesFound = provider.SearchForSeries(search);
 
                 foreach (var series in seriesFound)
                 {
